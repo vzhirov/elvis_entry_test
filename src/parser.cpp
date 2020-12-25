@@ -1,4 +1,3 @@
-#include "config.h"
 #include "parser.h"
 
 #include <iomanip>
@@ -64,6 +63,32 @@ bool Parser::parseI32LE(int* result)
     return true;
 }
 
+void Parser::skip(int length)
+{
+    if(leftBytes()<length)
+        setError("enought bytes for skip");
+    if(isError())
+        return;
+    mCursor += length;
+}
+
+int  Parser::byteSum(int size)
+{
+    if(leftBytes()<size)
+        setError("enought bytes for byteSum");
+    unsigned char result = 0;
+    for(int i=0;i<size;i++)
+        result += mCursor[i];
+    return (int)result;
+}
+
+Parser::Byte Parser::operator[] (int index)
+{
+    if(leftBytes()<index)
+        setError("enought bytes for subsript");
+    return isError() ? 0 : mCursor[index];
+}
+
 bool Parser::isError() const
 {
     return mIsError;
@@ -82,7 +107,7 @@ void Parser::setError(const std::string& msg)
     std::ostringstream oss;
     oss << msg << " at " << (mCursor-mBegin)
         << " :";
-    for(int i=0;i<mEnd-mCursor && i<CONFIG_HEX_DUMP_BYTES ;i++)
+    for(int i=0;i<mEnd-mCursor && i<5 ;i++)
         oss << " " << std::hex << std::setw(2) << std::setfill('0')
             << (int)mCursor[i];
     oss << std::endl;

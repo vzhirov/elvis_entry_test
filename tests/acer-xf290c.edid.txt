@@ -1,0 +1,29 @@
+# ========================================================
+# == ../tests/acer-xf290c.edid
+# ========================================================
+Manufacturer    : ACR (hex: 0x472)
+Product code    : 517
+Serial number   : 0x3866061
+Production date : 2016 (week = 16)
+Version         : 1.3
+Video input parameters: digital
+Bit depth       : undefined
+Video interface : undefined
+Display type    : RGB 4:4:4 + YCrCb 4:4:4
+Screen size     : 67 x 28 sm
+Display gamma   : 2.20
+Chromaticity    : R(667/340) G(314/646) B(154/60) W(322/338) 
+Established timing : Established timing: 800×600 @ 60 Hz
+Established timing : Established timing: 640×480 @ 75 Hz
+Established timing : Established timing: 640×480 @ 67 Hz (Apple Macintosh II)
+Established timing : Established timing: 640×480 @ 60 Hz (VGA) 
+Established timing : Established timing: 720×400 @ 70 Hz (VGA)
+Established timing : Established timing: 1280×1024 @ 75 Hz
+Established timing : Established timing: 1024×768 @ 75 Hz
+Established timing : Established timing: 1024×768 @ 60 Hz
+Established timing : Established timing: 800×600 @ 75 Hz
+DPMS features   : activeOff
+Other features  : 
+                  Preferred timing mode
+Checksum        : 0 (valid)
+Done.

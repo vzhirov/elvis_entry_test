@@ -1,8 +1,10 @@
 # Project specific
 .deps
+elvis_vzhirov_entry_test-*.tar.gz
 /out
 /src/elvis_vzhirov_bin
 /src/*.o
+/config.h
 
 # http://www.gnu.org/software/automake
 

@@ -33,6 +33,10 @@ public:
     bool parseI16LE(int* result);
     bool parseI32LE(int* result);
     bool parseI8(int* result);
+    void skip(int length);
+    int  byteSum(int size);
+
+    Byte operator[] (int index);
 
     // error
     bool        isError      () const;

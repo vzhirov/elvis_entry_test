@@ -1,5 +1,3 @@
-#include "config.h"
-
 #include "parser.h"
 
 #include <fstream>
@@ -95,6 +93,28 @@ EnumDict EDID_ANALOG_TYPES = EnumDict("Display type")
                                         << EnumValue( 3,"undefined" );
 
 
+EnumDict EDID_ESTABLISHED_TIMING = EnumDict("Established timing")
+                                        << EnumValue( 0x07,"720×400 @ 70 Hz (VGA)" )
+                                        << EnumValue( 0x06,"720×400 @ 88 Hz (XGA)" )
+                                        << EnumValue( 0x05,"640×480 @ 60 Hz (VGA) " )
+                                        << EnumValue( 0x04,"640×480 @ 67 Hz (Apple Macintosh II)" )
+                                        << EnumValue( 0x03,"640×480 @ 72 Hz" )
+                                        << EnumValue( 0x02,"640×480 @ 75 Hz" )
+                                        << EnumValue( 0x01,"800×600 @ 56 Hz" )
+                                        << EnumValue( 0x00,"800×600 @ 60 Hz" )
+
+                                        << EnumValue( 0x17,"800×600 @ 72 Hz" )
+                                        << EnumValue( 0x16,"800×600 @ 75 Hz" )
+                                        << EnumValue( 0x15,"832×624 @ 75 Hz (Apple Macintosh II)" )
+                                        << EnumValue( 0x14,"1024×768 @ 87 Hz, interlaced (1024×768i)" )
+                                        << EnumValue( 0x13,"1024×768 @ 60 Hz" )
+                                        << EnumValue( 0x12,"1024×768 @ 70 Hz" )
+                                        << EnumValue( 0x11,"1024×768 @ 75 Hz" )
+                                        << EnumValue( 0x10,"1280×1024 @ 75 Hz" )
+
+                                        << EnumValue( 0x27,"1152x870 @ 75 Hz (Apple Macintosh II)" );
+
+
 std::string manufacturerChar(int id,int shift)
 {
     char result[2] = { 'A', 0 };
@@ -117,6 +137,7 @@ bool bit2bool(int value, int shift)
 void parseEdid(Parser& parser, std::ostream& out)
 {
     using namespace std;
+    int checkSum;
     int manufacturerId;
     int productCode;
     int serialNumber;
@@ -139,8 +160,16 @@ void parseEdid(Parser& parser, std::ostream& out)
     int hScreenSize, vScreenSize;
     int gamma;
     int dpmsValue;
+    int rX,rY, gX, gY, bX, bY, wX, wY;
+    int establishedTimings[3];
 
+    bool hasEstablishedTimings = false;
+
+    checkSum = parser.byteSum(128);
     parser.parseSignature(EDID_SIGNATURE,sizeof(EDID_SIGNATURE));
+    if(checkSum!=0)
+        parser.setError("Invalid checksum");
+
     parser.parseI16LE(&manufacturerId);
     parser.parseI16LE(&productCode);
     parser.parseI32LE(&serialNumber);
@@ -166,7 +195,19 @@ void parseEdid(Parser& parser, std::ostream& out)
         sRgbColor        = bit2bool(dpmsValue,2);
         prefferedTiming  = bit2bool(dpmsValue,1);
         continiousTiming = bit2bool(dpmsValue,0);
-
+    rX = (parser[2]<<2)+((parser[0]>>6) & 3);
+    rY = (parser[3]<<2)+((parser[0]>>4) & 3);
+    gX = (parser[4]<<2)+((parser[0]>>2) & 3);
+    gY = (parser[5]<<2)+((parser[0]>>0) & 3);
+    bX = (parser[6]<<2)+((parser[1]>>6) & 3);
+    bY = (parser[7]<<2)+((parser[0]>>4) & 3);
+    wX = (parser[8]<<2)+((parser[0]>>2) & 3);
+    wY = (parser[9]<<2)+((parser[0]>>0) & 3);
+    parser.skip(10);
+    parser.parseI8(&establishedTimings[0]);
+    parser.parseI8(&establishedTimings[1]);
+    parser.parseI8(&establishedTimings[2]);
+    // parser.setError("TODO");
 
     out << "Manufacturer    : " << manufacturerChar(manufacturerId,10)
                              << manufacturerChar(manufacturerId,5)
@@ -208,6 +249,25 @@ void parseEdid(Parser& parser, std::ostream& out)
                 << "VSync pulse must be serrated when composite or sync-on-green is used" << endl; }
     out << "Screen size     : " << hScreenSize << " x " << vScreenSize << " sm" << endl;
     out << "Display gamma   : " << std::fixed << std::setprecision(2) << gamma*0.01+1 << endl;
+    out << "Chromaticity    : " << "R("<<rX<<"/"<<rY<<") " << "G("<<gX<<"/"<<gY<<") "
+                                << "B("<<bX<<"/"<<bY<<") " << "W("<<wX<<"/"<<wY<<") "
+                                << endl;
+    for(int iByte=0;iByte<3;iByte++)
+        for(int iBit=0;iBit<8;iBit++)
+            if(establishedTimings[iByte] & (1<<iBit)){
+                if(!hasEstablishedTimings)
+                    out << "Established timing : ";
+                else
+                    out << "                     ";
+                out << EDID_ESTABLISHED_TIMING.getDescription(iByte*16+iBit) << endl; }
+//                if(!hasEstablishedTimings)
+//                    out << "Established timing : ";
+//                else
+//                    out << "                     ";
+//                out << EDID_ESTABLISHED_TIMING.getDescription(iByte*16+iBit) << endl;
+// }
+//        
+
     out << "DPMS features   :";
     if(dmpsStandby)
         out <<" standby";
@@ -227,7 +287,10 @@ void parseEdid(Parser& parser, std::ostream& out)
         if(continiousTiming)
             out << "                  "
                 << "Continuous timings" <<endl; }
- 
+
+    out << "Checksum        : " << checkSum << " "
+                                << (checkSum==0 ? "(valid)" : "(invalid)")
+                                << endl;
     out << "Done." << endl;
 }
 
