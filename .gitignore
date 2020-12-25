@@ -1,3 +1,9 @@
+# Project specific
+.deps
+/out
+/src/elvis_vzhirov_bin
+/src/*.o
+
 # http://www.gnu.org/software/automake
 
 Makefile.in
