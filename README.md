@@ -10,18 +10,23 @@
 
 BUILD and RUN test
 
+```bash
 git clone https://github.com/vzhirov/elvis_entry_test.git
 cd elvis_entry_test
 autoreconf --install
+
 ./configure --prefix `pwd`/out
 make
 make check
 
+```
+
 USAGE
 
+```bash
 make install
 out/bin/elvis_vzhirov_bin tests/acer-xf290c.edid
-
+```
 
 EXTERNAL INFO:
 
